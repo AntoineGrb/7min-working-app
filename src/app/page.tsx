@@ -41,7 +41,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="text-center py-4 text-gray-500 text-sm">
-        Phase 1 - Setup & Foundation
+        Phase 2 - Données & Storage
       </footer>
     </div>
   );
