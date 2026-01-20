@@ -1,4 +1,4 @@
-type SoundName = 'beep-start' | 'beep-end' | 'complete';
+type SoundName = 'beep-tick' | 'beep-go' | 'complete';
 
 class AudioManager {
   private sounds: Map<string, HTMLAudioElement> = new Map();
@@ -26,8 +26,11 @@ class AudioManager {
   }
 
   preloadAll(): void {
-    this.preload('beep-start', '/sounds/beep-start.wav');
-    this.preload('beep-end', '/sounds/beep-end.wav');
+    // beep-tick: short beep for 3-2-1 countdown
+    this.preload('beep-tick', '/sounds/beep-tick.wav');
+    // beep-go: long beep at 0 (transition)
+    this.preload('beep-go', '/sounds/beep-go.wav');
+    // complete: victory sound at end of workout
     this.preload('complete', '/sounds/complete.wav');
   }
 

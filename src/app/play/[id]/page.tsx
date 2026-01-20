@@ -65,26 +65,27 @@ export default function PlayPage({ params }: PlayPageProps) {
     };
   }, []);
 
-  // Handle transition between states
+  // Handle transition between states (when timer reaches 0)
   const handleTransition = useCallback(
     (currentState: PlayerState): PlayerState => {
       if (!workout) return currentState;
 
       const { status, currentExerciseIndex } = currentState;
 
+      // Play "go" beep at every transition
+      audioManager.play('beep-go');
+
       switch (status) {
         case 'countdown':
           // Countdown finished -> Start first exercise
-          audioManager.play('beep-start');
           return {
             ...currentState,
             status: 'exercise',
             timeRemaining: workout.exerciseDuration,
           };
 
-        case 'exercise':
+        case 'exercise': {
           // Exercise finished
-          audioManager.play('beep-end');
           const isLastExercise = currentExerciseIndex >= exercises.length - 1;
 
           if (isLastExercise) {
@@ -104,10 +105,10 @@ export default function PlayPage({ params }: PlayPageProps) {
             status: 'rest',
             timeRemaining: workout.restDuration,
           };
+        }
 
         case 'rest':
           // Rest finished -> Next exercise
-          audioManager.play('beep-start');
           return {
             ...currentState,
             status: 'exercise',
@@ -131,9 +132,17 @@ export default function PlayPage({ params }: PlayPageProps) {
         if (prev.timeRemaining <= 1) {
           return handleTransition(prev);
         }
+
+        const newTimeRemaining = prev.timeRemaining - 1;
+
+        // Play tick beep at 3, 2, 1 seconds remaining
+        if (newTimeRemaining >= 1 && newTimeRemaining <= 3) {
+          audioManager.play('beep-tick');
+        }
+
         return {
           ...prev,
-          timeRemaining: prev.timeRemaining - 1,
+          timeRemaining: newTimeRemaining,
           totalElapsed: Math.floor((Date.now() - startTime.current) / 1000),
         };
       });

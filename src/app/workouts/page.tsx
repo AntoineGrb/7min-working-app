@@ -1,26 +1,46 @@
 'use client';
 
-import { useSyncExternalStore, useCallback } from 'react';
+import { useSyncExternalStore, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { WorkoutType } from '@/types';
 import { getWorkoutTypes } from '@/lib/storage';
 import WorkoutCard from '@/components/WorkoutCard';
 
-// Subscribe function for useSyncExternalStore
-function subscribe(callback: () => void) {
-  window.addEventListener('storage', callback);
-  return () => window.removeEventListener('storage', callback);
-}
+// Custom hook for localStorage with proper caching
+function useWorkoutTypes(): WorkoutType[] {
+  const cache = useRef<{ json: string; value: WorkoutType[] } | null>(null);
 
-export default function WorkoutsPage() {
+  const subscribe = useCallback((callback: () => void) => {
+    window.addEventListener('storage', callback);
+    // Also listen for custom event for same-tab updates
+    window.addEventListener('workouts-updated', callback);
+    return () => {
+      window.removeEventListener('storage', callback);
+      window.removeEventListener('workouts-updated', callback);
+    };
+  }, []);
+
   const getSnapshot = useCallback((): WorkoutType[] => {
-    if (typeof window === 'undefined') return [];
-    return getWorkoutTypes();
+    const workouts = getWorkoutTypes();
+    const json = JSON.stringify(workouts);
+
+    // Return cached value if data hasn't changed
+    if (cache.current && cache.current.json === json) {
+      return cache.current.value;
+    }
+
+    // Update cache and return new value
+    cache.current = { json, value: workouts };
+    return workouts;
   }, []);
 
   const getServerSnapshot = useCallback((): WorkoutType[] => [], []);
 
-  const workouts = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
+
+export default function WorkoutsPage() {
+  const workouts = useWorkoutTypes();
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">

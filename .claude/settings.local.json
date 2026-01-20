@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(copy:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}
