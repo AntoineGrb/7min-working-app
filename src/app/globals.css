@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Couleurs personnalisées pour l'app */
+  --color-exercise: #dc2626;
+  --color-rest: #2563eb;
+  --color-countdown: #16a34a;
+
+  /* Couleurs de base */
+  --color-background: #111827;
+  --color-foreground: #f9fafb;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* Utilitaires pour les couleurs personnalisées */
+.bg-exercise {
+  background-color: var(--color-exercise);
+}
+
+.bg-rest {
+  background-color: var(--color-rest);
+}
+
+.bg-countdown {
+  background-color: var(--color-countdown);
+}
+
+.text-exercise {
+  color: var(--color-exercise);
+}
+
+.text-rest {
+  color: var(--color-rest);
+}
+
+.text-countdown {
+  color: var(--color-countdown);
+}
