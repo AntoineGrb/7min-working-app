@@ -1,30 +1,42 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore, useCallback, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { WorkoutType, Exercise } from '@/types';
 import { getWorkoutTypeById, deleteWorkoutType } from '@/lib/storage';
 import { getExercisesByIds } from '@/lib/exercises-data';
 
+// Subscribe function for useSyncExternalStore
+function subscribe(callback: () => void) {
+  window.addEventListener('storage', callback);
+  return () => window.removeEventListener('storage', callback);
+}
+
 export default function WorkoutDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
 
-  const [workout, setWorkout] = useState<WorkoutType | null>(null);
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  useEffect(() => {
+  const getSnapshot = useCallback((): { workout: WorkoutType | null; exercises: Exercise[] } => {
+    if (typeof window === 'undefined') return { workout: null, exercises: [] };
     const loadedWorkout = getWorkoutTypeById(id);
     if (loadedWorkout) {
-      setWorkout(loadedWorkout);
-      setExercises(getExercisesByIds(loadedWorkout.exerciseIds));
+      return {
+        workout: loadedWorkout,
+        exercises: getExercisesByIds(loadedWorkout.exerciseIds),
+      };
     }
-    setIsLoading(false);
+    return { workout: null, exercises: [] };
   }, [id]);
+
+  const getServerSnapshot = useCallback((): { workout: WorkoutType | null; exercises: Exercise[] } => {
+    return { workout: null, exercises: [] };
+  }, []);
+
+  const { workout, exercises } = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const handleDelete = () => {
     if (workout && !workout.isDefault) {
@@ -41,14 +53,6 @@ export default function WorkoutDetailPage() {
     const seconds = totalSeconds % 60;
     return seconds > 0 ? `${minutes}min ${seconds}s` : `${minutes}min`;
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <p className="text-gray-400">Chargement...</p>
-      </div>
-    );
-  }
 
   if (!workout) {
     return (
