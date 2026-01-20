@@ -1,10 +1,14 @@
 import Link from "next/link";
+import SettingsPanel from "@/components/SettingsPanel";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4 flex flex-col">
       {/* Header */}
-      <header className="text-center py-8">
+      <header className="text-center py-8 relative">
+        <div className="absolute right-0 top-8">
+          <SettingsPanel />
+        </div>
         <h1 className="text-3xl font-bold">7min Workout</h1>
         <p className="text-gray-400 mt-2">Votre séance rapide quotidienne</p>
       </header>
@@ -41,7 +45,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="text-center py-4 text-gray-500 text-sm">
-        Phase 3 - Pages de consultation
+        7min Workout v1.0
       </footer>
     </div>
   );
