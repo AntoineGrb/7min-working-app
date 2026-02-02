@@ -1,17 +1,11 @@
 'use client';
 
-import { useSyncExternalStore, useCallback, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { WorkoutType, Exercise } from '@/types';
 import { getWorkoutTypeById, deleteWorkoutType } from '@/lib/storage';
 import { getExercisesByIds } from '@/lib/exercises-data';
-
-// Subscribe function for useSyncExternalStore
-function subscribe(callback: () => void) {
-  window.addEventListener('storage', callback);
-  return () => window.removeEventListener('storage', callback);
-}
 
 export default function WorkoutDetailPage() {
   const params = useParams();
@@ -19,24 +13,31 @@ export default function WorkoutDetailPage() {
   const id = params.id as string;
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [workout, setWorkout] = useState<WorkoutType | null>(null);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
 
-  const getSnapshot = useCallback((): { workout: WorkoutType | null; exercises: Exercise[] } => {
-    if (typeof window === 'undefined') return { workout: null, exercises: [] };
-    const loadedWorkout = getWorkoutTypeById(id);
-    if (loadedWorkout) {
-      return {
-        workout: loadedWorkout,
-        exercises: getExercisesByIds(loadedWorkout.exerciseIds),
-      };
-    }
-    return { workout: null, exercises: [] };
+  // Charger la séance
+  useEffect(() => {
+    const loadWorkout = () => {
+      const loadedWorkout = getWorkoutTypeById(id);
+      setWorkout(loadedWorkout || null);
+      if (loadedWorkout) {
+        setExercises(getExercisesByIds(loadedWorkout.exerciseIds));
+      } else {
+        setExercises([]);
+      }
+    };
+
+    loadWorkout();
+
+    // Écouter les changements dans le localStorage
+    const handleStorageChange = () => {
+      loadWorkout();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, [id]);
-
-  const getServerSnapshot = useCallback((): { workout: WorkoutType | null; exercises: Exercise[] } => {
-    return { workout: null, exercises: [] };
-  }, []);
-
-  const { workout, exercises } = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const handleDelete = () => {
     if (workout && !workout.isDefault) {

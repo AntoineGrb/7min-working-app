@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 
 export const metadata: Metadata = {
   title: "7min Workout",
@@ -32,7 +31,8 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
       </head>
       <body className="antialiased">
-        <ServiceWorkerRegister />
+        {/*TODO: Activer une fois le dev fini */}
+        {/* <ServiceWorkerRegister /> */}
         {children}
       </body>
     </html>
